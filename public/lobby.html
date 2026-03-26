@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏏 IPL Auction – Lobby</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    .lobby-layout { display: grid; grid-template-columns: 1fr 320px; gap: 24px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+    @media(max-width:900px){.lobby-layout{grid-template-columns:1fr;}}
+
+    .room-code-banner {
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(251,191,36,0.1));
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 24px;
+    }
+    .room-code-big { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 900; letter-spacing: 12px; color: var(--accent-gold); }
+    .room-code-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 4px; }
+
+    .user-card {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      transition: all 0.2s;
+      animation: fadeIn 0.3s ease;
+    }
+    .user-card.host { border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.05); }
+    .user-card.ready:not(.host) { border-color: rgba(16,185,129,0.4); }
+    .user-info { flex: 1; }
+    .user-name-row { display: flex; align-items: center; gap: 8px; }
+    .user-name { font-weight: 600; font-size: 1rem; }
+    .host-crown { color: var(--accent-gold); }
+    .ready-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; transition: background 0.2s; }
+    .ready-dot.ready { background: var(--accent-green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+    .ready-text { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .ready-text.ready { color: var(--accent-green); }
+
+    .users-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .category-section { margin-bottom: 20px; }
+    .category-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .cat-chip {
+      padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--bg-secondary); color: var(--text-secondary);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .cat-chip.selected { background: rgba(249,115,22,0.15); border-color: var(--accent); color: var(--accent); }
+    .cat-order { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+    .cat-order-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+    }
+    .cat-order-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+
+    .settings-panel { display: flex; flex-direction: column; gap: 12px; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-label { font-size: 0.85rem; color: var(--text-secondary); }
+    .setting-value { font-weight: 700; color: var(--text-primary); font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; }
+
+    .start-section { display: flex; flex-direction: column; gap: 12px; }
+    .ready-count { text-align: center; font-size: 0.85rem; color: var(--text-secondary); }
+    .ready-bar { height: 4px; background: var(--bg-secondary); border-radius: 2px; overflow: hidden; }
+    .ready-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-green), var(--accent)); border-radius: 2px; transition: width 0.3s; }
+
+    .my-ready-btn { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+    .waiting-msg { text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 8px; }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+<header class="page-header">
+  <div class="logo">🏏 IPL Auction</div>
+  <div style="display:flex;gap:12px;align-items:center">
+    <span class="stat-chip" id="header-status">⏳ Waiting...</span>
+  </div>
+</header>
+
+<div class="lobby-layout">
+  <!-- Left: Players & controls -->
+  <div>
+    <!-- Room code -->
+    <div class="room-code-banner">
+      <div>
+        <div class="room-code-label">Room Code</div>
+        <div class="room-code-big" id="room-code">------</div>
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px">Share this with friends to join</div>
+      </div>
+      <button class="btn btn-secondary" onclick="copyCode()">📋 Copy</button>
+    </div>
+
+    <!-- Participants -->
+    <div class="card" style="margin-bottom:20px">
+      <h3 style="margin-bottom:16px">👥 Participants <span id="user-count" style="color:var(--text-muted);font-size:0.9rem"></span></h3>
+      <div class="users-list" id="users-list">
+        <div style="color:var(--text-muted);font-size:0.9rem">Loading participants...</div>
+      </div>
+    </div>
+
+    <!-- Category selection (host only) -->
+    <div class="card" id="category-card" style="display:none">
+      <h3 style="margin-bottom:4px">🏷️ Auction Category Order</h3>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px">Select categories in order of auction. E.g. Batsmen first, then Bowlers.</p>
+      <div class="category-chips" id="cat-chips"></div>
+      <div id="cat-order-list" class="cat-order" style="margin-top:14px"></div>
+      <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="clearCategories()">🗑 Reset</button>
+    </div>
+  </div>
+
+  <!-- Right: Settings & Start -->
+  <div style="display:flex;flex-direction:column;gap:20px">
+    <div class="card">
+      <h3 style="margin-bottom:16px">⚙️ Room Settings</h3>
+      <div class="settings-panel" id="settings-panel">
+        <div class="setting-row"><span class="setting-label">Budget</span><span class="setting-value" id="st-budget">—</span></div>
+        <div class="setting-row"><span class="setting-label">Timer</span><span class="setting-value" id="st-timer">—</span></div>
+        <div class="setting-row"><span class="setting-label">Min Increment</span><span class="setting-value" id="st-increment">—</span></div>
+        <div class="setting-row"><span class="setting-label">Max Team Size</span><span class="setting-value" id="st-maxteam">—</span></div>
+      </div>
+    </div>
+
+    <div class="card start-section" id="action-card">
+      <h3 style="margin-bottom:8px">🚦 Auction Status</h3>
+      <div class="ready-count" id="ready-count">0 / 0 ready</div>
+      <div class="ready-bar"><div class="ready-bar-fill" id="ready-bar" style="width:0%"></div></div>
+
+      <!-- Host: Start button -->
+      <div id="host-controls" style="display:none">
+        <button class="btn btn-primary btn-full btn-lg" id="start-btn" onclick="startAuction()" disabled>
+          🏏 Start Auction
+        </button>
+        <p class="waiting-msg" id="start-hint">Need at least 2 participants to start</p>
+      </div>
+
+      <!-- Non-host: Ready button -->
+      <div id="guest-controls" style="display:none">
+        <button class="btn btn-secondary btn-full my-ready-btn" id="ready-btn" onclick="toggleReady()">
+          ✋ Mark Ready
+        </button>
+        <p class="waiting-msg">Waiting for host to start...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/utils.js"></script>
+<script>
+const { roomId, name, avatar } = getSessionData();
+if (!roomId || !name) window.location.href = '/';
+
+let socket, mySocketId, isHost = false, roomState = null;
+let categoryOrder = [];
+let isReady = false;
+
+const CATS = ['BAT','BWL','WK','AR','ALL'];
+const CAT_LABELS = { BAT:'🏏 Batsmen', BWL:'🎳 Bowlers', WK:'🧤 Wicket-Keepers', AR:'⚡ All-Rounders', ALL:'🌟 All Players' };
+
+function init() {
+  socket = io();
+  socket.on('connect', () => {
+    mySocketId = socket.id;
+    // Rejoin if reconnecting
+    const existingRoom = new URLSearchParams(window.location.search).get('room');
+    socket.emit('rejoin_room', { roomId: existingRoom, name }, (res) => {
+      if (res && res.error) {
+        // Not found, redirect home
+        showToast('Session expired. Please rejoin.', 'error');
+        setTimeout(() => window.location.href = '/', 2000);
+      } else if (res && res.rejoined) {
+        sessionStorage.setItem('auc_roomId', res.roomId);
+      }
+    });
+  });
+
+  socket.on('room_state', (state) => {
+    roomState = state;
+    if (state.status === 'AUCTION') window.location.href = '/auction.html';
+    if (state.status === 'ENDED') window.location.href = '/results.html';
+    renderRoom(state);
+  });
+  socket.on('user_joined', ({ name: n }) => showToast(`${n} joined the room`, 'info'));
+  socket.on('user_left', ({ name: n }) => showToast(`${n} left the room`, 'error'));
+  socket.on('host_changed', ({ newHostName }) => showToast(`${newHostName} is now the host`, 'info'));
+  socket.on('auction_started', () => window.location.href = '/auction.html');
+}
+
+function renderRoom(state) {
+  const me = state.users.find(u => u.socketId === mySocketId);
+  isHost = me?.isHost || false;
+
+  document.getElementById('room-code').textContent = state.roomId;
+  document.getElementById('header-status').textContent = `👥 ${state.users.filter(u=>u.connected).length} online`;
+
+  // Settings
+  const s = state.settings;
+  document.getElementById('st-budget').textContent = formatPrice(s.budget);
+  document.getElementById('st-timer').textContent = `${s.timerDuration}s`;
+  document.getElementById('st-increment').textContent = `₹${s.minIncrement}L`;
+  document.getElementById('st-maxteam').textContent = `${s.maxTeamSize} players`;
+
+  // Users
+  const connUsers = state.users.filter(u => u.connected);
+  document.getElementById('user-count').textContent = `(${connUsers.length})`;
+  const readyCount = connUsers.filter(u => u.ready).length;
+  document.getElementById('ready-count').textContent = `${readyCount} / ${connUsers.length} ready`;
+  const pct = connUsers.length ? (readyCount/connUsers.length*100) : 0;
+  document.getElementById('ready-bar').style.width = pct+'%';
+
+  const list = document.getElementById('users-list');
+  list.innerHTML = state.users.filter(u=>u.connected).map(u => `
+    <div class="user-card ${u.isHost?'host':''} ${u.ready?'ready':''}">
+      <div class="avatar">${u.avatar}</div>
+      <div class="user-info">
+        <div class="user-name-row">
+          <span class="user-name">${u.name}</span>
+          ${u.isHost?'<span class="host-crown">👑</span>':''}
+          ${u.socketId===mySocketId?'<span style="font-size:0.75rem;color:var(--text-muted)">(you)</span>':''}
+        </div>
+        <div class="ready-text ${u.ready?'ready':''}">${u.ready?'✓ Ready':'Not ready'}</div>
+      </div>
+      <div class="ready-dot ${u.ready?'ready':''}"></div>
+    </div>
+  `).join('');
+
+  // Host / guest controls
+  document.getElementById('host-controls').style.display = isHost ? 'flex' : 'none';
+  document.getElementById('host-controls').style.flexDirection = 'column';
+  document.getElementById('host-controls').style.gap = '10px';
+  document.getElementById('guest-controls').style.display = isHost ? 'none' : 'block';
+  document.getElementById('category-card').style.display = isHost ? 'block' : 'none';
+
+  // Start button
+  const startBtn = document.getElementById('start-btn');
+  const hint = document.getElementById('start-hint');
+  const canStart = connUsers.length >= 2;
+  startBtn.disabled = !canStart;
+  hint.textContent = canStart ? 'Set category order above, then start!' : 'Need at least 2 participants';
+
+  // Ready button
+  if (me && !isHost) {
+    isReady = me.ready;
+    const btn = document.getElementById('ready-btn');
+    btn.textContent = isReady ? '✓ Ready!' : '✋ Mark Ready';
+    btn.className = `btn btn-full my-ready-btn ${isReady ? 'btn-success' : 'btn-secondary'}`;
+  }
+
+  // Render category chips (host)
+  if (isHost) renderCategoryChips();
+}
+
+function renderCategoryChips() {
+  const chips = document.getElementById('cat-chips');
+  chips.innerHTML = CATS.map(c => {
+    const sel = categoryOrder.includes(c);
+    return `<div class="cat-chip ${sel?'selected':''}" onclick="toggleCat('${c}')">${CAT_LABELS[c]}</div>`;
+  }).join('');
+  const orderList = document.getElementById('cat-order-list');
+  orderList.innerHTML = categoryOrder.length === 0
+    ? '<div style="color:var(--text-muted);font-size:0.82rem">No category selected – will use All Players</div>'
+    : categoryOrder.map((c,i) => `
+      <div class="cat-order-item">
+        <div class="cat-order-num">${i+1}</div>
+        <span>${CAT_LABELS[c]}</span>
+        <button onclick="removeCat(${i})" style="margin-left:auto;background:none;border:none;color:var(--accent-red);cursor:pointer;font-size:1.1rem">✕</button>
+      </div>`).join('');
+}
+
+function toggleCat(cat) {
+  if (categoryOrder.includes(cat)) {
+    categoryOrder = categoryOrder.filter(c => c !== cat);
+  } else {
+    categoryOrder.push(cat);
+  }
+  renderCategoryChips();
+}
+function removeCat(idx) { categoryOrder.splice(idx,1); renderCategoryChips(); }
+function clearCategories() { categoryOrder = []; renderCategoryChips(); }
+
+function toggleReady() { socket.emit('toggle_ready'); }
+
+function startAuction() {
+  const cats = categoryOrder.length > 0 ? categoryOrder : ['ALL'];
+  socket.emit('start_auction', { categories: cats }, (res) => {
+    if (res?.error) showToast(res.error, 'error');
+    else window.location.href = '/auction.html';
+  });
+}
+
+function copyCode() {
+  copyToClipboard(document.getElementById('room-code').textContent);
+}
+
+init();
+</script>
+</body>
+</html>

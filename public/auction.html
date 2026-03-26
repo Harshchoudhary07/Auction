@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🏏 IPL Auction – Live</title>
+  <link rel="stylesheet" href="/css/style.css"/>
+  <style>
+    body { overflow: hidden; }
+    .auction-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+      gap: 0;
+    }
+    @media(max-width:1100px){
+      body { overflow: auto; }
+      .auction-layout { grid-template-columns: 1fr; grid-template-rows: auto; height: auto; }
+      .left-panel, .right-panel { max-height: 300px; overflow-y: auto; }
+    }
+
+    /* ── TOP BAR ── */
+    .auction-topbar {
+      grid-column: 1/-1;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(10,11,15,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: relative; z-index: 10;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 16px; }
+    .topbar-center { display: flex; flex-direction: column; align-items: center; }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #ef4444; animation: pulse 1s infinite; }
+
+    /* ── TIMER RING ── */
+    .timer-wrapper { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .timer-ring-container { position: relative; width: 70px; height: 70px; }
+    .timer-ring-svg { width: 70px; height: 70px; transform: rotate(-90deg); }
+    .timer-ring-bg { fill: none; stroke: var(--bg-secondary); stroke-width: 6; }
+    .timer-ring-fill { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+    .timer-number {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Rajdhani', sans-serif; font-size: 1.6rem; font-weight: 900;
+    }
+    .timer-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .timer-number.danger { color: var(--accent-red); }
+
+    /* ── CURRENT BID BAR ── */
+    .bid-bar {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 20px;
+    }
+    .bid-bar-amount { font-family: 'Rajdhani', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--accent-gold); }
+    .bid-bar-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .bid-bar-who { font-size: 0.85rem; font-weight: 600; color: var(--accent-green); }
+
+    /* ── SIDE PANELS ── */
+    .left-panel, .right-panel {
+      padding: 16px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+    .right-panel { border-right: none; border-left: 1px solid var(--border); }
+    .panel-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; font-weight: 600; }
+
+    /* ── MAIN CENTER ── */
+    .auction-main {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px; gap: 20px; overflow: hidden;
+      background: radial-gradient(ellipse at center, rgba(249,115,22,0.05) 0%, transparent 70%);
+    }
+
+    /* ── PLAYER CARD ── */
+    .player-card {
+      width: 100%; max-width: 420px;
+      background: linear-gradient(145deg, #1a1d28, #111318);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), var(--shadow-glow);
+      animation: zoomIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .player-card.sold { border-color: rgba(16,185,129,0.6); box-shadow: 0 0 40px rgba(16,185,129,0.3); }
+    .player-card.unsold { border-color: rgba(239,68,68,0.4); }
+
+    /* Photo header – full-width gradient photo */
+    .card-photo-area {
+      position: relative; height: 200px; overflow: hidden;
+      background: linear-gradient(135deg, #1a1d28, #0d0f18);
+    }
+    .card-photo-area::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 30%, rgba(10,11,15,0.95) 100%);
+    }
+    .card-photo-img {
+      width: 100%; height: 100%; object-fit: cover; object-position: top center;
+      transition: transform 0.4s ease;
+    }
+    .card-photo-img:hover { transform: scale(1.04); }
+    .card-photo-emoji-fallback {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 6rem; background: linear-gradient(135deg,rgba(249,115,22,0.1),transparent);
+    }
+    .card-photo-overlay {
+      position: absolute; bottom: 12px; left: 16px; right: 16px; z-index: 2;
+    }
+    .player-name { font-family: 'Rajdhani', sans-serif; font-size: 1.9rem; font-weight: 900; line-height: 1.1; text-shadow: 0 2px 8px rgba(0,0,0,0.8); }
+    .player-country { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+    .rating-stars { color: #fbbf24; font-size: 0.85rem; margin-top: 4px; letter-spacing: 2px; }
+
+    .card-header {
+      padding: 12px 18px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,191,36,0.04));
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .player-meta { flex: 1; }
+    .player-ipl { font-size: 0.78rem; color: var(--text-muted); }
+
+    .card-body { padding: 12px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .card-stat { display: flex; flex-direction: column; gap: 2px; }
+    .card-stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .card-stat-value { font-family: 'Rajdhani', sans-serif; font-size: 1.15rem; font-weight: 700; }
+
+    .sold-banner {
+      background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05));
+      border-top: 1px solid rgba(16,185,129,0.3);
+      padding: 12px 24px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent-green);
+      font-size: 1.1rem;
+    }
+    .unsold-banner {
+      background: rgba(239,68,68,0.1);
+      border-top: 1px solid rgba(239,68,68,0.3);
+      padding: 12px 24px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent-red);
+    }
+
+    /* ── BID CONTROLS ── */
+    .bid-controls {
+      display: flex; gap: 10px; align-items: center; width: 100%; max-width: 400px; flex-wrap: wrap;
+    }
+    .bid-input-group { display: flex; flex: 1; min-width: 200px; }
+    .bid-input-group input {
+      flex: 1; padding: 14px 16px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-right: none;
+      border-radius: var(--radius-md) 0 0 var(--radius-md);
+      color: var(--text-primary);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.3rem; font-weight: 700;
+      outline: none;
+    }
+    .bid-input-group input:focus { border-color: var(--accent); }
+    .bid-input-group .bid-currency {
+      padding: 0 12px;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-left: none;
+      border-right: none;
+      display: flex; align-items: center;
+      color: var(--text-muted); font-size: 0.85rem;
+    }
+    .bid-submit { border-radius: 0 var(--radius-md) var(--radius-md) 0 !important; }
+
+    .quick-bids { display: flex; gap: 8px; width: 100%; max-width: 400px; }
+    .quick-bid-btn {
+      flex: 1; padding: 8px 4px;
+      background: var(--bg-glass); border: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 0.78rem; font-weight: 600;
+      border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .quick-bid-btn:hover:not(:disabled) { background: rgba(249,115,22,0.15); border-color: var(--accent); color: var(--accent); }
+    .quick-bid-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    /* ── HOST CONTROLS ── */
+    .host-bar {
+      display: flex; gap: 10px; align-items: center;
+      padding: 10px 16px;
+      background: rgba(251,191,36,0.05);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: var(--radius-md);
+      width: 100%; max-width: 400px;
+    }
+    .host-bar-label { font-size: 0.75rem; color: var(--accent-gold); font-weight: 600; }
+
+    /* ── LEADERBOARD / TEAM ── */
+    .lb-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+    .lb-item.leading {
+      background: rgba(249,115,22,0.1);
+      border-color: rgba(249,115,22,0.3);
+      animation: glow-pulse 2s infinite;
+    }
+    .lb-item.me { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.2); }
+    .lb-name { flex: 1; font-size: 0.85rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lb-budget { font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; color: var(--accent-green); }
+    .lb-team-count { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ── My team ── */
+    .team-player {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      font-size: 0.8rem;
+      animation: slideInLeft 0.3s ease;
+    }
+
+    /* ── Activity feed ── */
+    .activity-item {
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      margin-bottom: 6px;
+      border-left: 3px solid var(--border);
+      background: var(--bg-glass);
+      animation: fadeIn 0.3s ease;
+    }
+    .activity-item.bid { border-left-color: var(--accent-gold); }
+    .activity-item.sold { border-left-color: var(--accent-green); }
+    .activity-item.unsold { border-left-color: var(--accent-red); }
+    .activity-item.cat { border-left-color: var(--accent-purple); }
+    .activity-time { color: var(--text-muted); font-size: 0.7rem; }
+
+    .cat-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px;
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      margin-left: 8px;
+    }
+    .cat-badge-BAT { background: rgba(59,130,246,0.15); color: #3b82f6; }
+    .cat-badge-BWL { background: rgba(239,68,68,0.15); color: #ef4444; }
+    .cat-badge-WK  { background: rgba(245,158,11,0.15); color: #f59e0b; }
+    .cat-badge-AR  { background: rgba(16,185,129,0.15); color: #10b981; }
+    .cat-badge-ALL { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+    /* ── Category add (host mid-auction) ── */
+    .cat-select { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-primary); border-radius: var(--radius-sm); padding: 6px 10px; font-size: 0.82rem; outline: none; }
+
+    /* ── Ended overlay ── */
+    .ended-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+      animation: fadeIn 0.5s ease;
+    }
+    .ended-overlay.hidden { display: none; }
+    .ended-title { font-family: 'Rajdhani', sans-serif; font-size: 3rem; font-weight: 900; background: linear-gradient(135deg,#f97316,#fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Ended overlay -->
+<div class="ended-overlay hidden" id="ended-overlay">
+  <div class="ended-title">🏆 AUCTION COMPLETE!</div>
+  <p style="color:var(--text-secondary)">All players have been auctioned.</p>
+  <button class="btn btn-primary btn-lg" onclick="window.location.href='/results.html'">📊 View Results</button>
+</div>
+
+<div class="auction-layout">
+  <!-- TOP BAR -->
+  <div class="auction-topbar">
+    <div class="topbar-left">
+      <div class="live-dot"></div>
+      <span class="logo" style="font-size:1.2rem">🏏 LIVE AUCTION</span>
+      <span class="cat-badge cat-badge-ALL" id="current-cat-badge" style="font-size:0.75rem">ALL</span>
+    </div>
+    <div class="topbar-center">
+      <div class="bid-bar" id="bid-bar">
+        <div>
+          <div class="bid-bar-label">Current Bid</div>
+          <div class="bid-bar-amount" id="topbar-bid-amount">—</div>
+        </div>
+        <div style="width:1px;height:40px;background:var(--border)"></div>
+        <div>
+          <div class="bid-bar-label">Leading</div>
+          <div class="bid-bar-who" id="topbar-bid-who" style="color:var(--text-muted)">No bids yet</div>
+        </div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="stat-chip" id="my-budget-chip">💰 ₹—</div>
+      <div class="stat-chip" id="players-left-chip">📋 — left</div>
+    </div>
+  </div>
+
+  <!-- LEFT PANEL: My Team -->
+  <div class="left-panel">
+    <div class="panel-title">🏏 My Team <span id="my-team-count" style="color:var(--accent)">(0)</span></div>
+    <div id="my-team-list"><div style="color:var(--text-muted);font-size:0.8rem">No players yet</div></div>
+  </div>
+
+  <!-- CENTER MAIN -->
+  <div class="auction-main">
+    <!-- Timer -->
+    <div class="timer-wrapper" id="timer-wrapper">
+      <div class="timer-ring-container">
+        <svg class="timer-ring-svg" viewBox="0 0 70 70">
+          <circle class="timer-ring-bg" cx="35" cy="35" r="30"/>
+          <circle class="timer-ring-fill" id="timer-ring" cx="35" cy="35" r="30"
+            stroke-dasharray="188.5" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-number" id="timer-display">--</div>
+      </div>
+      <div class="timer-label">seconds</div>
+    </div>
+
+    <!-- Player Card -->
+    <div id="player-card-area" style="width:100%;max-width:400px">
+      <div style="text-align:center;color:var(--text-muted);font-size:1rem;padding:60px 0">
+        <div style="font-size:3rem;margin-bottom:16px">⏳</div>
+        Auction starting...
+      </div>
+    </div>
+
+    <!-- Bid Controls -->
+    <div id="bid-controls" style="display:none;flex-direction:column;gap:10px;width:100%;max-width:400px;align-items:center">
+      <!-- Quick bids -->
+      <div class="quick-bids" id="quick-bids"></div>
+      <!-- Custom bid input -->
+      <div class="bid-input-group" style="width:100%">
+        <input type="number" id="bid-amount" placeholder="Enter bid" min="0" step="5"/>
+        <div class="bid-currency">₹L</div>
+        <button class="btn btn-gold bid-submit" id="bid-submit-btn" onclick="placeBid()">💰 BID</button>
+      </div>
+    </div>
+
+    <!-- Host controls bar (skip, add category) -->
+    <div class="host-bar" id="host-bar" style="display:none">
+      <span class="host-bar-label">👑 HOST</span>
+      <button class="btn btn-danger btn-sm" onclick="skipPlayer()">⏭ Skip</button>
+      <select class="cat-select" id="add-cat-select">
+        <option value="">+ Add category...</option>
+        <option value="BAT">🏏 Batsmen</option>
+        <option value="BWL">🎳 Bowlers</option>
+        <option value="WK">🧤 Wicket-Keepers</option>
+        <option value="AR">⚡ All-Rounders</option>
+        <option value="ALL">🌟 All (Remaining)</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="addCategory()">Add</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: Leaderboard + Activity -->
+  <div class="right-panel">
+    <div class="panel-title">🏆 Leaderboard</div>
+    <div id="leaderboard-list"></div>
+    <div class="panel-title" style="margin-top:16px">📡 Activity</div>
+    <div id="activity-feed" style="max-height:250px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/utils.js"></script>
+<script>
+const { roomId, name, avatar } = getSessionData();
+if (!roomId || !name) window.location.href = '/';
+
+let socket, mySocketId, isHost = false;
+let currentBid = 0, timerMax = 10, currentPhase = 'BIDDING';
+let currentPlayer = null;
+const CIRC = 2 * Math.PI * 30; // 188.5
+
+function init() {
+  socket = io();
+  socket.on('connect', () => {
+    mySocketId = socket.id;
+    socket.emit('rejoin_room', { roomId, name }, (res) => {
+      if (res?.error) { showToast('Session expired', 'error'); setTimeout(() => window.location.href = '/', 2000); }
+    });
+  });
+
+  socket.on('room_state', handleRoomState);
+  socket.on('player_up', handlePlayerUp);
+  socket.on('bid_update', handleBidUpdate);
+  socket.on('timer_tick', handleTimerTick);
+  socket.on('player_sold', handlePlayerSold);
+  socket.on('player_unsold', handlePlayerUnsold);
+  socket.on('auction_ended', handleAuctionEnded);
+  socket.on('category_change', ({ category }) => {
+    addActivity(`📂 Category changed to ${categoryLabel(category)}`, 'cat');
+    updateCatBadge(category);
+    showToast(`Now auctioning: ${categoryLabel(category)}`, 'info');
+  });
+}
+
+function handleRoomState(state) {
+  const me = state.users.find(u => u.socketId === mySocketId);
+  if (!me) return;
+  isHost = me.isHost;
+  timerMax = state.settings.timerDuration;
+
+  if (state.status === 'LOBBY') { window.location.href = '/lobby.html'; return; }
+  if (state.status === 'ENDED') { window.location.href = '/results.html'; return; }
+
+  const auc = state.auction;
+  if (auc) {
+    currentBid = auc.currentBid;
+    currentPlayer = auc.currentPlayer;
+    currentPhase = auc.phase;
+    updateCatBadge(auc.currentCategory);
+    document.getElementById('topbar-bid-amount').textContent = formatPrice(auc.currentBid);
+    if (auc.highestBidder) {
+      const bidder = state.users.find(u => u.socketId === auc.highestBidder);
+      document.getElementById('topbar-bid-who').textContent = bidder ? bidder.name : '?';
+      document.getElementById('topbar-bid-who').style.color = 'var(--accent-green)';
+    }
+    document.getElementById('players-left-chip').textContent = `📋 ${auc.playersRemaining} left`;
+    updateTimer(auc.timerValue);
+  }
+
+  // My budget
+  document.getElementById('my-budget-chip').textContent = `💰 ${formatPrice(me.budget)}`;
+  // My team
+  renderMyTeam(me.team);
+  // Leaderboard
+  renderLeaderboard(state.users, auc?.highestBidder);
+  // Host controls
+  document.getElementById('host-bar').style.display = isHost ? 'flex' : 'none';
+  // Bid controls
+  if (currentPlayer && currentPhase === 'BIDDING') {
+    showBidControls(state.settings, me);
+  }
+}
+
+function handlePlayerUp({ player, basePrice, timerDuration }) {
+  currentPlayer = player;
+  currentBid = basePrice;
+  currentPhase = 'BIDDING';
+  timerMax = timerDuration;
+  renderPlayerCard(player, null);
+  updateTopbar(basePrice, null);
+  // Show bid controls - get current settings from last room state
+  document.getElementById('bid-controls').style.display = 'flex';
+  document.getElementById('bid-amount').value = '';
+  renderQuickBids(basePrice, 5);
+  document.getElementById('bid-submit-btn').disabled = false;
+  document.getElementById('bid-controls').style.opacity = '1';
+  updateTimer(timerDuration);
+}
+
+function handleBidUpdate({ amount, bidderId, bidderName, bidderAvatar }) {
+  currentBid = amount;
+  updateTopbar(amount, bidderName);
+  addActivity(`${bidderAvatar} ${bidderName} bid ${formatPrice(amount)}`, 'bid');
+  // Flash the bid input area
+  const ctrl = document.getElementById('bid-controls');
+  ctrl.style.animation = 'bidFlash 0.4s ease';
+  setTimeout(() => { ctrl.style.animation = ''; }, 400);
+  renderQuickBids(amount, 5);
+  // Update leaderboard from next room_state
+}
+
+function handleTimerTick({ value }) {
+  updateTimer(value);
+}
+
+function handlePlayerSold({ player, soldPrice, winnerId, winnerName }) {
+  currentPhase = 'SOLD';
+  const card = document.getElementById('player-card-area');
+  const existing = card.querySelector('.player-card');
+  if (existing) existing.classList.add('sold');
+
+  const banner = document.createElement('div');
+  banner.className = 'sold-banner zoom-in';
+  const isMe = winnerId === mySocketId;
+  banner.innerHTML = `🏆 SOLD to ${isMe ? '<span style="color:#fbbf24">YOU</span>' : winnerName} for ${formatPrice(soldPrice)}`;
+  if (existing) existing.appendChild(banner);
+
+  addActivity(`✅ ${player.name} sold to ${winnerName} for ${formatPrice(soldPrice)}`, 'sold');
+  if (isMe) showToast(`🎉 You won ${player.name} for ${formatPrice(soldPrice)}!`, 'success', 5000);
+  hideBidControls();
+}
+
+function handlePlayerUnsold({ player, skipped }) {
+  currentPhase = 'UNSOLD';
+  const card = document.getElementById('player-card-area');
+  const existing = card.querySelector('.player-card');
+  if (existing) existing.classList.add('unsold');
+
+  const banner = document.createElement('div');
+  banner.className = 'unsold-banner';
+  banner.textContent = skipped ? '⏭ SKIPPED – No sale' : '❌ UNSOLD – No bids';
+  if (existing) existing.appendChild(banner);
+
+  addActivity(`❌ ${player.name} went unsold`, 'unsold');
+  hideBidControls();
+}
+
+function handleAuctionEnded({ results }) {
+  // Store results for results page
+  sessionStorage.setItem('auc_results', JSON.stringify(results));
+  document.getElementById('ended-overlay').classList.remove('hidden');
+  setTimeout(() => window.location.href = '/results.html', 4000);
+}
+
+// ── Rendering helpers ──────────────────────────────────────────────────────
+function renderPlayerCard(player) {
+  const area = document.getElementById('player-card-area');
+  const roleColors = { BAT: '#3b82f6', BWL: '#ef4444', WK: '#f59e0b', AR: '#10b981' };
+  const rlName = roleName(player.role);
+  const stars = '★'.repeat(Math.round((player.rating||5)/2)) + '☆'.repeat(5 - Math.round((player.rating||5)/2));
+  const hasPhoto = !!player.imageUrl;
+
+  area.innerHTML = `
+    <div class="player-card zoom-in">
+      <!-- Photo area -->
+      <div class="card-photo-area">
+        ${ hasPhoto
+          ? `<img class="card-photo-img" id="player-photo"
+              src="${player.imageUrl}"
+              alt="${player.name}"
+              onerror="document.getElementById('player-photo').style.display='none';document.getElementById('player-emoji-fb').style.display='flex'"/>
+             <div class="card-photo-emoji-fallback" id="player-emoji-fb" style="display:none">${player.emoji}</div>`
+          : `<div class="card-photo-emoji-fallback" id="player-emoji-fb">${player.emoji}</div>`
+        }
+        <div class="card-photo-overlay">
+          <div class="player-name">${player.name}</div>
+          <div class="rating-stars">${stars}</div>
+          <div class="player-country">🌍 ${player.country}</div>
+        </div>
+      </div>
+      <!-- Role + team row -->
+      <div class="card-header">
+        <span class="role-badge role-${player.role}">${roleEmoji(player.role)} ${rlName}</span>
+        <span style="font-size:0.8rem;color:var(--text-muted)">IPL 2026: <b style="color:var(--text-secondary)">${player.iplTeam}</b></span>
+        <span style="margin-left:auto;font-size:0.75rem;color:var(--accent-gold);font-weight:700">Rating: ${player.rating||'?'}/10</span>
+      </div>
+      <!-- Stats -->
+      <div class="card-body">
+        <div class="card-stat">
+          <span class="card-stat-label">Base Price</span>
+          <span class="card-stat-value price">${formatPrice(player.basePrice)}</span>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Role</span>
+          <span class="card-stat-value" style="color:${roleColors[player.role]}">${rlName}</span>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Country</span>
+          <span class="card-stat-value" style="font-size:0.95rem">${player.country}</span>
+        </div>
+        <div class="card-stat">
+          <span class="card-stat-label">Min Next Bid</span>
+          <span class="card-stat-value" style="color:var(--accent)">${formatPrice(player.basePrice + 5)}</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderMyTeam(team) {
+  const list = document.getElementById('my-team-list');
+  const count = document.getElementById('my-team-count');
+  count.textContent = `(${team.length})`;
+  if (team.length === 0) { list.innerHTML = '<div style="color:var(--text-muted);font-size:0.8rem">No players yet</div>'; return; }
+  list.innerHTML = team.map(p => `
+    <div class="team-player">
+      <span class="role-badge role-${p.role}" style="font-size:0.65rem;padding:2px 6px">${p.role}</span>
+      <span style="flex:1;font-size:0.8rem;font-weight:600">${p.name}</span>
+      <span style="font-family:'Rajdhani',sans-serif;font-size:0.85rem;color:var(--accent-gold)">${formatPrice(p.soldPrice)}</span>
+    </div>`).join('');
+}
+
+function renderLeaderboard(users, highestBidderId) {
+  const sorted = [...users].filter(u=>u.connected).sort((a,b) => b.team.length - a.team.length || a.budget - b.budget);
+  document.getElementById('leaderboard-list').innerHTML = sorted.map((u,i) => `
+    <div class="lb-item ${u.socketId===highestBidderId?'leading':''} ${u.socketId===mySocketId?'me':''}">
+      <span style="font-size:1.1rem;min-width:20px">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1+'.'}</span>
+      <div class="avatar" style="width:28px;height:28px;font-size:0.9rem">${u.avatar}</div>
+      <div style="flex:1;min-width:0">
+        <div class="lb-name">${u.name}${u.socketId===mySocketId?' (you)':''}</div>
+        <div class="lb-team-count">${u.teamCount} players</div>
+      </div>
+      <div class="lb-budget">${formatPrice(u.budget)}</div>
+    </div>`).join('');
+}
+
+function updateTopbar(amount, bidderName) {
+  document.getElementById('topbar-bid-amount').textContent = formatPrice(amount);
+  const who = document.getElementById('topbar-bid-who');
+  if (bidderName) { who.textContent = bidderName; who.style.color = 'var(--accent-green)'; }
+  else { who.textContent = 'No bids yet'; who.style.color = 'var(--text-muted)'; }
+}
+
+function updateTimer(value) {
+  const display = document.getElementById('timer-display');
+  const ring = document.getElementById('timer-ring');
+  display.textContent = value;
+  const pct = Math.max(0, value / timerMax);
+  ring.style.strokeDashoffset = CIRC * (1 - pct);
+  const danger = value <= 3;
+  ring.style.stroke = danger ? '#ef4444' : value <= 5 ? '#f59e0b' : 'var(--accent)';
+  display.className = `timer-number ${danger ? 'danger' : ''}`;
+}
+
+function updateCatBadge(category) {
+  const el = document.getElementById('current-cat-badge');
+  el.className = `cat-badge cat-badge-${category}`;
+  el.textContent = categoryLabel(category);
+}
+
+function renderQuickBids(base, inc) {
+  const increments = [inc, inc*2, inc*4, inc*10];
+  document.getElementById('quick-bids').innerHTML = increments.map(incr => `
+    <button class="quick-bid-btn" onclick="setQuickBid(${base+incr})">+${formatPrice(incr)}<br><span style="color:var(--text-primary)">${formatPrice(base+incr)}</span></button>
+  `).join('');
+  // Pre-fill input with min bid
+  document.getElementById('bid-amount').value = base + inc;
+  document.getElementById('bid-amount').min = base + inc;
+}
+
+function showBidControls(settings, me) {
+  const ctrl = document.getElementById('bid-controls');
+  ctrl.style.display = 'flex';
+  renderQuickBids(currentBid, settings.minIncrement);
+  const btn = document.getElementById('bid-submit-btn');
+  const canBid = me.budget >= currentBid + settings.minIncrement && me.teamCount < settings.maxTeamSize;
+  btn.disabled = !canBid;
+  if (!canBid) { btn.textContent = me.budget < currentBid ? '💸 No Budget' : '✅ Team Full'; }
+  else btn.textContent = '💰 BID';
+}
+
+function hideBidControls() {
+  const ctrl = document.getElementById('bid-controls');
+  ctrl.style.opacity = '0.4';
+  ctrl.style.pointerEvents = 'none';
+  document.querySelectorAll('.quick-bid-btn').forEach(b => b.disabled = true);
+  document.getElementById('bid-submit-btn').disabled = true;
+}
+
+function setQuickBid(amount) {
+  document.getElementById('bid-amount').value = amount;
+}
+
+function placeBid() {
+  const raw = document.getElementById('bid-amount').value;
+  const amount = parseFloat(raw);
+  if (isNaN(amount) || amount <= 0) return showToast('Enter a valid bid amount', 'error');
+  socket.emit('place_bid', { amount }, (res) => {
+    if (res?.error) showToast(res.error, 'error');
+    else showToast(`Bid placed: ${formatPrice(amount)}`, 'bid');
+  });
+}
+
+function skipPlayer() {
+  socket.emit('skip_player', (res) => {
+    if (res?.error) showToast(res.error, 'error');
+    else showToast('Player skipped', 'info');
+  });
+}
+
+function addCategory() {
+  const sel = document.getElementById('add-cat-select');
+  const cat = sel.value;
+  if (!cat) return;
+  socket.emit('add_category', { category: cat }, (res) => {
+    if (res?.error) showToast(res.error, 'error');
+    else { showToast(`${categoryLabel(cat)} added to queue`, 'success'); sel.value = ''; }
+  });
+}
+
+function addActivity(msg, type = 'info') {
+  const feed = document.getElementById('activity-feed');
+  const t = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const item = document.createElement('div');
+  item.className = `activity-item ${type}`;
+  item.innerHTML = `${msg}<div class="activity-time">${t}</div>`;
+  feed.prepend(item);
+  // Keep max 30 items
+  while (feed.children.length > 30) feed.removeChild(feed.lastChild);
+}
+
+// Enter key to bid
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.activeElement.id === 'bid-amount') placeBid();
+});
+
+init();
+</script>
+</body>
+</html>
