@@ -165,11 +165,9 @@ function init() {
   socket = io();
   socket.on('connect', () => {
     mySocketId = socket.id;
-    // Rejoin if reconnecting
-    const existingRoom = new URLSearchParams(window.location.search).get('room');
-    socket.emit('rejoin_room', { roomId: existingRoom, name }, (res) => {
+    // roomId is always in sessionStorage (set when creating/joining)
+    socket.emit('rejoin_room', { roomId, name }, (res) => {
       if (res && res.error) {
-        // Not found, redirect home
         showToast('Session expired. Please rejoin.', 'error');
         setTimeout(() => window.location.href = '/', 2000);
       } else if (res && res.rejoined) {
@@ -180,14 +178,13 @@ function init() {
 
   socket.on('room_state', (state) => {
     roomState = state;
-    if (state.status === 'AUCTION') window.location.href = '/auction.html';
-    if (state.status === 'ENDED') window.location.href = '/results.html';
+    if (state.status === 'AUCTION') { window.location.href = '/auction.html'; return; }
+    if (state.status === 'ENDED') { window.location.href = '/results.html'; return; }
     renderRoom(state);
   });
   socket.on('user_joined', ({ name: n }) => showToast(`${n} joined the room`, 'info'));
   socket.on('user_left', ({ name: n }) => showToast(`${n} left the room`, 'error'));
   socket.on('host_changed', ({ newHostName }) => showToast(`${newHostName} is now the host`, 'info'));
-  socket.on('auction_started', () => window.location.href = '/auction.html');
 }
 
 function renderRoom(state) {

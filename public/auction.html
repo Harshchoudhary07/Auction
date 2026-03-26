@@ -432,6 +432,8 @@ function handleRoomState(state) {
     }
     document.getElementById('players-left-chip').textContent = `📋 ${auc.playersRemaining} left`;
     updateTimer(auc.timerValue);
+    // Render player card on reconnect if one is currently up
+    if (auc.currentPlayer) renderPlayerCard(auc.currentPlayer);
   }
 
   // My budget
@@ -455,12 +457,16 @@ function handlePlayerUp({ player, basePrice, timerDuration }) {
   timerMax = timerDuration;
   renderPlayerCard(player, null);
   updateTopbar(basePrice, null);
-  // Show bid controls - get current settings from last room state
-  document.getElementById('bid-controls').style.display = 'flex';
+  // Show bid controls – fully reset disabled/pointer state from previous player
+  const ctrl = document.getElementById('bid-controls');
+  ctrl.style.display = 'flex';
+  ctrl.style.opacity = '1';
+  ctrl.style.pointerEvents = 'auto';
   document.getElementById('bid-amount').value = '';
   renderQuickBids(basePrice, 5);
-  document.getElementById('bid-submit-btn').disabled = false;
-  document.getElementById('bid-controls').style.opacity = '1';
+  const btn = document.getElementById('bid-submit-btn');
+  btn.disabled = false;
+  btn.textContent = '💰 BID';
   updateTimer(timerDuration);
 }
 
@@ -471,8 +477,14 @@ function handleBidUpdate({ amount, bidderId, bidderName, bidderAvatar }) {
   // Flash the bid input area
   const ctrl = document.getElementById('bid-controls');
   ctrl.style.animation = 'bidFlash 0.4s ease';
+  ctrl.style.opacity = '1';
+  ctrl.style.pointerEvents = 'auto';
   setTimeout(() => { ctrl.style.animation = ''; }, 400);
   renderQuickBids(amount, 5);
+  // Re-enable BID button so outbid players can act immediately
+  const btn = document.getElementById('bid-submit-btn');
+  btn.disabled = false;
+  btn.textContent = '💰 BID';
   // Update leaderboard from next room_state
 }
 
@@ -637,11 +649,15 @@ function renderQuickBids(base, inc) {
 function showBidControls(settings, me) {
   const ctrl = document.getElementById('bid-controls');
   ctrl.style.display = 'flex';
+  ctrl.style.opacity = '1';
+  ctrl.style.pointerEvents = 'auto';
   renderQuickBids(currentBid, settings.minIncrement);
   const btn = document.getElementById('bid-submit-btn');
-  const canBid = me.budget >= currentBid + settings.minIncrement && me.teamCount < settings.maxTeamSize;
+  btn.disabled = false;
+  const myTeamSize = Array.isArray(me.team) ? me.team.length : (me.teamCount || 0);
+  const canBid = me.budget >= currentBid + settings.minIncrement && myTeamSize < settings.maxTeamSize;
   btn.disabled = !canBid;
-  if (!canBid) { btn.textContent = me.budget < currentBid ? '💸 No Budget' : '✅ Team Full'; }
+  if (!canBid) { btn.textContent = me.budget < currentBid + settings.minIncrement ? '💸 No Budget' : '✅ Team Full'; }
   else btn.textContent = '💰 BID';
 }
 
@@ -649,8 +665,9 @@ function hideBidControls() {
   const ctrl = document.getElementById('bid-controls');
   ctrl.style.opacity = '0.4';
   ctrl.style.pointerEvents = 'none';
-  document.querySelectorAll('.quick-bid-btn').forEach(b => b.disabled = true);
-  document.getElementById('bid-submit-btn').disabled = true;
+  document.querySelectorAll('.quick-bid-btn').forEach(b => { b.disabled = true; });
+  const btn = document.getElementById('bid-submit-btn');
+  btn.disabled = true;
 }
 
 function setQuickBid(amount) {

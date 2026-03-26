@@ -456,5 +456,20 @@ app.get('/api/room/:roomId', (req, res) => {
   res.json({ exists: true, status: room.status, userCount: Object.keys(room.users).length });
 });
 
+app.get('/api/room/:roomId/results', (req, res) => {
+  const room = getRoomSafe(req.params.roomId?.toUpperCase());
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+  if (room.status !== 'ENDED') return res.status(400).json({ error: 'Auction not ended yet' });
+  const results = Object.values(room.users).map(u => ({
+    socketId: u.socketId,
+    name: u.name,
+    avatar: u.avatar,
+    team: u.team,
+    budgetSpent: room.settings.budget - u.budget,
+    budgetLeft: u.budget,
+  }));
+  res.json({ results, settings: room.settings });
+});
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🏏 IPL Auction server running on http://localhost:${PORT}`));
