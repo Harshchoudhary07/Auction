@@ -20,26 +20,25 @@
       font-family: 'Rajdhani', sans-serif;
       font-size: clamp(2.2rem,6vw,3.8rem); font-weight: 900;
       background: linear-gradient(135deg,#f97316,#fbbf24);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
       margin-bottom: 8px;
     }
     .results-sub { font-size: 0.95rem; color: var(--text-secondary); margin-top: 8px; }
 
-    /* ── SCORING LEGEND ── */
-    .scoring-legend {
-      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
-      margin: 20px 0;
+    /* ── FORMULA LEGEND ── */
+    .formula-legend {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 4px;
     }
-    .legend-item {
-      display: flex; align-items: center; gap: 8px;
+    .legend-pill {
+      display: flex; align-items: center; gap: 6px;
       background: var(--bg-glass); border: 1px solid var(--border);
-      border-radius: 20px; padding: 6px 14px; font-size: 0.78rem;
+      border-radius: 20px; padding: 5px 12px; font-size: 0.76rem;
     }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
     /* ── SUMMARY STATS ── */
     .stats-grid {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
       gap: 12px; margin-bottom: 32px;
     }
     .stat-card {
@@ -85,12 +84,21 @@
     .podium-rank-icon { font-size: 2.2rem; margin-bottom: 8px; }
     .podium-name { font-family: 'Rajdhani', sans-serif; font-size: 1.1rem; font-weight: 700; }
     .podium-score { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; color: var(--accent); }
-    .podium-grade { font-size: 0.85rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; display: inline-block; margin-top: 4px; }
-    .grade-S { background:rgba(251,191,36,0.2); color:#fbbf24; }
-    .grade-A { background:rgba(16,185,129,0.2); color:#10b981; }
-    .grade-B { background:rgba(59,130,246,0.2); color:#3b82f6; }
-    .grade-C { background:rgba(139,92,246,0.2); color:#8b5cf6; }
-    .grade-D { background:rgba(239,68,68,0.2); color:#ef4444; }
+    .strength-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:700; margin-top:4px; }
+    .strength-strong  { background:rgba(239,68,68,0.15);  color:#ef4444; }
+    .strength-balanced{ background:rgba(59,130,246,0.15); color:#3b82f6; }
+    .strength-average { background:rgba(16,185,129,0.15); color:#10b981; }
+    .strength-weak    { background:rgba(148,163,184,0.15);color:#94a3b8; }
+
+    /* ── WARNING TAGS ── */
+    .warn-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+    .warn-tag {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:2px 8px; border-radius:10px; font-size:0.66rem; font-weight:700;
+      background:rgba(251,191,36,0.12); color:#f59e0b;
+      border:1px solid rgba(251,191,36,0.3);
+    }
+    .warn-tag.danger { background:rgba(239,68,68,0.1); color:#ef4444; border-color:rgba(239,68,68,0.3); }
 
     /* ── RANK TABLE ── */
     .rankings-grid { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
@@ -127,8 +135,40 @@
     .score-bar-value { font-size:0.82rem; font-weight:700; font-family:'Rajdhani',sans-serif; }
     .score-bar-bg { height:8px; background:var(--bg-secondary); border-radius:4px; overflow:hidden; }
     .score-bar-fill { height:100%; border-radius:4px; transition:width 1.2s cubic-bezier(0.34,1.2,0.64,1); }
+    .penalty-bar-fill { background: linear-gradient(90deg,#ef4444,#dc2626) !important; }
 
-    /* Insights */
+    /* AI Analysis */
+    .ai-analysis {
+      background: linear-gradient(135deg,rgba(139,92,246,0.08),rgba(59,130,246,0.05));
+      border: 1px solid rgba(139,92,246,0.25); border-radius: var(--radius-md);
+      padding: 14px 16px; margin-bottom: 14px; font-size:0.84rem; line-height:1.6;
+      color: var(--text-secondary);
+    }
+    .ai-analysis-label { font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; color:#8b5cf6; font-weight:700; margin-bottom:6px; }
+
+    /* Charts Row */
+    .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    @media(max-width:680px){ .charts-row { grid-template-columns:1fr; } }
+    .chart-box {
+      background:var(--bg-secondary); border:1px solid var(--border);
+      border-radius:var(--radius-md); padding:14px;
+    }
+    .chart-title { font-size:0.73rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); font-weight:600; margin-bottom:10px; }
+
+    /* Donut chart */
+    .donut-wrap { display:flex; align-items:center; gap:14px; }
+    .donut-legend { display:flex; flex-direction:column; gap:5px; }
+    .donut-legend-item { display:flex; align-items:center; gap:6px; font-size:0.75rem; }
+    .donut-legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+    /* Rating bars chart */
+    .rating-bar-item { display:flex; align-items:center; gap:8px; margin-bottom:5px; }
+    .rating-bar-name { font-size:0.68rem; width:90px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text-secondary); }
+    .rating-bar-track { flex:1; height:10px; background:var(--bg-card); border-radius:5px; overflow:hidden; }
+    .rating-bar-fill { height:100%; border-radius:5px; transition:width 1s ease 0.2s; }
+    .rating-bar-num { font-size:0.68rem; font-family:'Rajdhani',sans-serif; font-weight:700; width:18px; text-align:right; }
+
+    /* Strengths/weaknesses */
     .insights-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
     @media(max-width:680px){ .insights-grid { grid-template-columns:1fr; } }
     .insight-box { background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px; }
@@ -137,17 +177,18 @@
 
     /* Roster */
     .team-roster { padding: 0 20px 18px; }
-    .roster-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:8px; }
+    .roster-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:8px; }
     .roster-player {
       display:flex; align-items:center; gap:8px; padding:8px 10px;
       background:var(--bg-secondary); border:1px solid var(--border); border-radius:var(--radius-sm);
-      cursor:default; transition:border-color 0.2s;
+      transition:border-color 0.2s;
     }
     .roster-player:hover { border-color:rgba(249,115,22,0.3); }
     .roster-player-photo { width:32px; height:32px; border-radius:50%; object-fit:cover; object-position:top; flex-shrink:0; border:1px solid var(--border); background:var(--bg-card); }
     .roster-player-emoji { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; background:var(--bg-card); border:1px solid var(--border); flex-shrink:0; }
     .roster-player-name { font-size:0.76rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .roster-player-price { font-size:0.68rem; color:var(--accent-gold); font-family:'Rajdhani',sans-serif; font-weight:700; }
+    .roster-rating-stars { font-size:0.6rem; color:#fbbf24; letter-spacing:1px; }
 
     .expand-toggle { font-size:0.78rem; color:var(--text-muted); padding:8px 20px; cursor:pointer; display:flex; align-items:center; gap:6px; border-top:1px solid var(--border); transition:color 0.2s; }
     .expand-toggle:hover { color:var(--accent); }
@@ -174,22 +215,23 @@
   <div class="results-hero">
     <div class="results-title">🏆 AUCTION COMPLETE!</div>
     <div id="results-sub" class="results-sub">Calculating rankings…</div>
-    <!-- Scoring legend -->
-    <div class="scoring-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Player Quality (35 pts)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>Team Balance (30 pts)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>Coordination (20 pts)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>Value Efficiency (15 pts)</div>
+    <div class="formula-legend">
+      <div class="legend-pill"><div class="legend-dot" style="background:#fbbf24"></div>(A) Player Ratings</div>
+      <div class="legend-pill"><div class="legend-dot" style="background:#10b981"></div>(B) Role Balance +20</div>
+      <div class="legend-pill"><div class="legend-dot" style="background:#ef4444"></div>(C) Star Bonus ×5</div>
+      <div class="legend-pill"><div class="legend-dot" style="background:#3b82f6"></div>(D) Budget Efficiency</div>
+      <div class="legend-pill"><div class="legend-dot" style="background:#8b5cf6"></div>(E) Experience</div>
+      <div class="legend-pill"><div class="legend-dot" style="background:#dc2626"></div>Penalties</div>
     </div>
   </div>
 
-  <!-- Loading state -->
+  <!-- Loading -->
   <div id="loading-state" class="loading-state">
     <div class="loading-spinner">⏳</div>
     <div style="color:var(--text-muted)">Loading results…</div>
   </div>
 
-  <!-- Content (hidden until data loads) -->
+  <!-- Content -->
   <div id="results-content" style="display:none">
     <!-- Most expensive player -->
     <div id="most-expensive" class="most-expensive" style="display:none">
@@ -210,7 +252,7 @@
     <div class="podium-section">
       <h2 style="margin-bottom:4px">🏆 Team Rankings</h2>
       <p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:20px">
-        Scored on Player Quality · Team Balance · Coordination &amp; Synergy · Value Efficiency
+        Score = Sum of player ratings + Role Balance bonus + Star bonus + Budget Efficiency + Experience − Penalties
       </p>
       <div class="podium" id="podium"></div>
     </div>
@@ -228,152 +270,195 @@
 
 <script src="/js/utils.js"></script>
 <script>
-// ─── RANKING ALGORITHM (100 points total) ─────────────────────────────────────
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const MIN_SQUAD = 7;    // below this → incomplete squad penalty
+const IDEAL_XI  = 11;   // ideal size
+
+const ROLE_COLORS = { BAT:'#3b82f6', BWL:'#ef4444', WK:'#f59e0b', AR:'#10b981' };
+
+// ─── SCORING ENGINE ───────────────────────────────────────────────────────────
+// Score = A + B + C + D + E - penalties  (no cap; raw number)
 //
-//  1. Player Quality   (0–35): avg rating + star power bonus
-//  2. Team Balance     (0–30): role composition vs ideal XI
-//  3. Coordination     (0–20): tactical combos (opener quality, finisher, pace+spin etc.)
-//  4. Value Efficiency (0–15): rating-per-lakh-spent efficiency
+// (A) Player Rating Score  = sum of all player ratings (1-10 each)
+// (B) Role Balance Bonus   = +20 if all 4 roles hit ideal counts
+// (C) Star Player Bonus    = players with rating >= 9 → ×5 each
+// (D) Budget Efficiency    = (avgRating / avgSpendPerPlayer) × 50, normalised
+// (E) Experience Score     = experienced country players × 2
+// Penalties: missing role (−20/−20/−15/−0), small squad (−10 per missing player below MIN_SQUAD)
 
-function scoreTeam(team, totalBudget, budgetSpent) {
-  const empty = { total:0, quality:0, balance:0, coordination:0, value:0, grade:'D',
-                  insights:{ strengths:[], weaknesses:[], suggestions:[] } };
-  if (!team || team.length === 0) return empty;
+const EXPERIENCED_COUNTRIES = ['India','Australia','England','South Africa','West Indies','New Zealand','Pakistan','Sri Lanka'];
+const SPINNERS  = ['Yuzvendra Chahal','Rashid Khan','Varun Chakaravarthy','Kuldeep Yadav','Ravichandran Ashwin','Sunil Narine','Noor Ahmad','Ravi Bishnoi','Karn Sharma'];
+const FINISHERS = ['MS Dhoni','Andre Russell','Hardik Pandya','Kieron Pollard','Tim David','Rinku Singh'];
+const CAPTAINS  = ['Rohit Sharma','Virat Kohli','KL Rahul','Shubman Gill','Shreyas Iyer','Pat Cummins','Hardik Pandya'];
 
-  const ratings   = team.map(p => p.rating || 5);
-  const avgRating = ratings.reduce((s,r) => s+r, 0) / ratings.length;
-  const starCount = team.filter(p => (p.rating||5) >= 9).length;
-  const goodCount = team.filter(p => (p.rating||5) >= 7).length;
+function scoreTeam(team, budgetSpent) {
+  const empty = {
+    total: 0, raw: 0,
+    A: 0, B: 0, C: 0, D: 0, E: 0,
+    penaltySquad: 0, penaltyRoles: 0,
+    strength: 'weak', warnings: [],
+    insights: { strengths:[], weaknesses:[], suggestions:[] },
+    aiAnalysis: '',
+  };
+  if (!team || team.length === 0) {
+    empty.warnings.push({ text: 'No players purchased', danger: true });
+    return empty;
+  }
 
-  // — 1. QUALITY (35 pts) —
-  const qBase    = (avgRating / 10) * 25;                // 0–25: average rating
-  const qStar    = Math.min(starCount * 3, 8);           // 0–8:  world-class bonus
-  const qGood    = Math.min(goodCount * 0.4, 2);         // 0–2:  solid players
-  const quality  = Math.round(Math.min(qBase + qStar + qGood, 35));
-
-  // — 2. BALANCE (30 pts) — ideal: 5 BAT, 1+ WK, 4 BWL, 2 AR, 11+ squad
   const roles = { BAT:0, BWL:0, WK:0, AR:0 };
   team.forEach(p => { if (roles[p.role] !== undefined) roles[p.role]++; });
 
-  const batScore  = Math.min(roles.BAT / 5, 1);
-  const wkScore   = Math.min(roles.WK, 1);
-  const bwlScore  = Math.min(roles.BWL / 4, 1);
-  const arScore   = Math.min(roles.AR / 2, 1);
-  const sizeScore = Math.min(team.length / 11, 1);
-  const balance   = Math.round(((batScore + wkScore + bwlScore + arScore + sizeScore) / 5) * 30);
+  // ── (A) Player Rating Score ─────────────────────────────────────────────────
+  const ratings   = team.map(p => p.rating || 5);
+  const A         = ratings.reduce((s,r) => s+r, 0);  // raw sum e.g. 8 players → max 80
 
-  // — 3. COORDINATION (20 pts) — 6 tactical checks
-  const SPINNERS   = ['Yuzvendra Chahal','Rashid Khan','Varun Chakaravarthy','Kuldeep Yadav',
-                       'Ravichandran Ashwin','Sunil Narine','Noor Ahmad','Ravi Bishnoi','Karn Sharma'];
-  const FINISHERS  = ['MS Dhoni','Andre Russell','Hardik Pandya','Kieron Pollard','Tim David','Rinku Singh'];
-  const CAPTAINS   = ['Rohit Sharma','Virat Kohli','KL Rahul','Shubman Gill','Shreyas Iyer','Pat Cummins','Hardik Pandya'];
+  // ── (B) Role Balance Bonus (+20) ───────────────────────────────────────────
+  // Ideal: 5+ BAT, 1+ WK, 4+ BWL, 2+ AR
+  const balancedBat = roles.BAT >= 5;
+  const balancedWk  = roles.WK  >= 1;
+  const balancedBwl = roles.BWL >= 4;
+  const balancedAr  = roles.AR  >= 2;
+  const B = (balancedBat && balancedWk && balancedBwl && balancedAr) ? 20 : 0;
 
-  const checks = [
-    team.some(p => p.role === 'BAT'  && (p.rating||5) >= 8),             // quality top-order
-    team.some(p => (p.role==='AR'||p.role==='WK') && (p.rating||5) >= 8),// utility bat
-    team.some(p => p.role === 'BWL'  && (p.rating||5) >= 9),             // pace ace
-    team.some(p => SPINNERS.includes(p.name)),                            // quality spinner
-    team.some(p => FINISHERS.includes(p.name)),                           // finisher
-    team.some(p => CAPTAINS.includes(p.name)),                            // captain material
-  ];
-  const coordination = Math.round((checks.filter(Boolean).length / checks.length) * 20);
+  // ── (C) Star Player Bonus (rating >= 9 → ×5) ───────────────────────────────
+  const stars = team.filter(p => (p.rating||5) >= 9);
+  const C     = stars.length * 5;
 
-  // — 4. VALUE EFFICIENCY (15 pts) —
-  let value = 0;
-  if (budgetSpent > 0 && totalBudget > 0) {
-    const avgPricePerPlayer = budgetSpent / team.length;
-    const avgRatingPerLakh  = avgRating / Math.max(avgPricePerPlayer, 1);
-    // Normalise: a rating of 8 bought at average price of ~200L per player is ~0.04 r/L
-    value = Math.round(Math.min((avgRatingPerLakh / 0.06) * 15, 15));
+  // ── (D) Budget Efficiency (0–50) ───────────────────────────────────────────
+  let D = 0;
+  if (budgetSpent > 0 && team.length > 0) {
+    const avgRating        = A / team.length;
+    const avgSpend         = budgetSpent / team.length;
+    const ratingPerLakh    = avgRating / Math.max(avgSpend, 1);
+    // Normalise: ~0.04 r/L is decent, ~0.08+ is exceptional
+    D = Math.round(Math.min((ratingPerLakh / 0.08) * 50, 50));
   }
 
-  const total = Math.min(quality + balance + coordination + value, 100);
+  // ── (E) Experience Score (×2 per experienced player) ───────────────────────
+  const expPlayers = team.filter(p => EXPERIENCED_COUNTRIES.includes(p.country));
+  const E          = Math.min(expPlayers.length * 2, 30); // cap at 30
 
-  const grade = total >= 85 ? 'S' : total >= 72 ? 'A' : total >= 58 ? 'B' : total >= 42 ? 'C' : 'D';
+  // ── PENALTIES ──────────────────────────────────────────────────────────────
+  const missing     = Math.max(0, MIN_SQUAD - team.length);
+  const penaltySquad= missing * 10;
 
-  // — Insights —
+  let penaltyRoles = 0;
+  if (roles.BWL === 0)  penaltyRoles += 20;
+  if (roles.BAT === 0)  penaltyRoles += 20;
+  if (roles.WK  === 0)  penaltyRoles += 15;
+
+  const raw   = A + B + C + D + E;
+  const total = Math.max(0, raw - penaltySquad - penaltyRoles);
+
+  // ── STRENGTH LABEL ─────────────────────────────────────────────────────────
+  const strength =
+    total >= 850 ? 'strong'   :
+    total >= 750 ? 'balanced' :
+    total >= 650 ? 'average'  : 'weak';
+
+  // ── WARNING TAGS ───────────────────────────────────────────────────────────
+  const warnings = [];
+  if (team.length < MIN_SQUAD)            warnings.push({ text: '⚠️ Incomplete Squad',          danger: true  });
+  if (roles.BWL === 0)                    warnings.push({ text: '⚠️ No Specialist Bowler',       danger: true  });
+  if (roles.BAT === 0)                    warnings.push({ text: '⚠️ No Batsman',                 danger: true  });
+  if (roles.WK  === 0)                    warnings.push({ text: '⚠️ No Wicket-Keeper',           danger: false });
+  if (roles.AR  === 0)                    warnings.push({ text: '⚠️ No All-Rounder',             danger: false });
+  if (!balancedBat && roles.BAT > 0)      warnings.push({ text: '⚠️ Batting-Light (<5 batsmen)', danger: false });
+  if (!balancedBwl && roles.BWL > 0)      warnings.push({ text: '⚠️ Bowling-Light (<4 bowlers)', danger: false });
+
+  // ── INSIGHTS ───────────────────────────────────────────────────────────────
+  const avgRating = A / team.length;
   const strengths = [], weaknesses = [], suggestions = [];
 
-  if (quality >= 28)       strengths.push('World-class lineup with multiple marquee stars');
-  else if (quality >= 20)  strengths.push('Solid mix of quality players across the squad');
-  else                     weaknesses.push('Lack of high-rated players — may struggle in big moments');
+  if (avgRating >= 9)    strengths.push('Elite squad with world-class talent throughout');
+  else if (avgRating >= 7.5) strengths.push('Strong average rating — consistently quality picks');
+  else weaknesses.push('Low average player quality — many journeyman selections');
 
-  if (roles.BAT >= 5)      strengths.push('Deep batting order — great for high-scoring encounters');
-  else if (roles.BAT < 3)  { weaknesses.push('Batting too thin — vulnerable to collapses'); suggestions.push('Add 2–3 quality batsmen'); }
+  if (stars.length >= 3) strengths.push(`${stars.length} marquee stars (rating ≥9): ${stars.slice(0,3).map(p=>p.name).join(', ')}`);
+  if (B === 20)          strengths.push('Perfectly balanced squad — all 4 roles fully covered');
+  if (D >= 40)           strengths.push('Exceptional budget efficiency — tremendous value for money');
+  if (roles.BWL >= 5)    strengths.push('Deep bowling attack with plenty of options');
+  if (roles.BAT >= 6)    strengths.push('Top-heavy batting order — dangerous at any pitch');
+  if (roles.AR >= 3)     strengths.push('Multiple all-rounders add tactical flexibility');
+  if (team.some(p => FINISHERS.includes(p.name))) strengths.push('Proven death-overs finisher in the lineup');
+  if (team.some(p => SPINNERS.includes(p.name)))  strengths.push('Quality spinner — crucial on subcontinental tracks');
+  if (team.some(p => CAPTAINS.includes(p.name)))  strengths.push('Experienced captaincy option in the squad');
 
-  if (roles.BWL >= 4)      strengths.push('Strong bowling depth with multiple options');
-  else if (roles.BWL < 2)  { weaknesses.push('Very limited bowling attack'); suggestions.push('Prioritise pace & spin bowlers'); }
+  if (roles.WK === 0)  { weaknesses.push('No wicketkeeper — a glaring gap in the squad'); suggestions.push('Must have at minimum one WK'); }
+  if (roles.BWL < 2)   { weaknesses.push('Critically short on bowling options'); suggestions.push('Invest in at least 2 specialist bowlers'); }
+  if (roles.BAT < 3)   { weaknesses.push('Short batting lineup — exposure to collapses'); suggestions.push('Add 2+ quality batsmen for depth'); }
+  if (roles.AR === 0)  { weaknesses.push('No all-rounders — limits tactical flexibility'); suggestions.push('An all-rounder like Hardik/Jadeja is invaluable'); }
+  if (D < 20)          { weaknesses.push('Poor budget efficiency — overpaid for average talent'); suggestions.push('Seek undervalued players in next auction'); }
+  if (team.length < IDEAL_XI) suggestions.push(`Squad of ${team.length} is under ideal XI — add ${IDEAL_XI - team.length} more players`);
 
-  if (roles.WK === 0)      { weaknesses.push('No wicketkeeper in squad!'); suggestions.push('Must acquire a wicketkeeper'); }
-  else if (roles.WK >= 2)  strengths.push('Good wicketkeeper cover for injury backup');
+  // ── AI ANALYSIS PARAGRAPH ─────────────────────────────────────────────────
+  const squadSize  = team.length;
+  const topPlayer  = team.sort((a,b) => (b.rating||0)-(a.rating||0))[0];
+  const strengthTxt = strength === 'strong' ? 'formidable' : strength === 'balanced' ? 'well-rounded' : strength === 'average' ? 'decent' : 'underpowered';
 
-  if (roles.AR >= 2)       strengths.push('All-rounders add flexibility and balance to any XI');
-  else if (roles.AR === 0) { weaknesses.push('No all-rounders limits tactical options'); suggestions.push('An all-rounder like Hardik/Jadeja is invaluable'); }
+  let ai = `This is a ${strengthTxt} squad of ${squadSize} players`;
+  if (topPlayer) ai += `, headlined by ${topPlayer.name} (rating ${topPlayer.rating}/10)`;
+  ai += '. ';
+  if (avgRating >= 8) ai += 'The overall talent level is world-class. ';
+  else if (avgRating >= 6.5) ai += 'There is a decent mix of established players and development talent. ';
+  else ai += 'The squad relies heavily on lower-rated players. ';
+  if (B === 20) ai += 'Squad balance is excellent with all four roles adequately represented. ';
+  else {
+    const missing = [];
+    if (!balancedBat) missing.push('batting depth');
+    if (!balancedBwl) missing.push('bowling variety');
+    if (!balancedWk) missing.push('a wicket-keeper');
+    if (!balancedAr) missing.push('all-round cover');
+    if (missing.length) ai += `The squad lacks ${missing.join(' and ')}. `;
+  }
+  if (D >= 40) ai += 'Budget management was outstanding — excellent value signings throughout. ';
+  else if (D >= 25) ai += 'Budget was managed reasonably. ';
+  else ai += 'Spending was inefficient — too much paid for players who underperformed. ';
+  if (penaltySquad > 0) ai += `⚠️ The squad is incomplete (${squadSize} players) — a penalty of ${penaltySquad} pts was applied. `;
+  if (penaltyRoles > 0) ai += `⚠️ Missing key roles cost ${penaltyRoles} pts in penalties. `;
 
-  if (checks[2] && checks[3]) strengths.push('Excellent pace + spin combination in bowling');
-  else if (!checks[3])     suggestions.push('A quality spinner is vital on subcontinent pitches');
-
-  if (checks[4])           strengths.push('Reliable death-overs finisher in the team');
-  else                     suggestions.push('Acquire a proven finisher for the final overs');
-
-  if (starCount >= 3)      strengths.push(`${starCount} world-class players — marquee talent across the squad`);
-
-  if (team.length >= 14)   strengths.push('Deep squad with strong bench cover and flexibility');
-  else if (team.length < 7){ weaknesses.push('Very small squad — poor injury cover'); suggestions.push('Build depth to at least 11 players'); }
-
-  if (value >= 12)         strengths.push('Exceptional budget efficiency — outstanding value signings');
-  else if (value <= 4)     weaknesses.push('Overinvested in some players — budget efficiency is poor');
-
-  return { total, quality, balance, coordination, value, grade,
-           insights: { strengths, weaknesses, suggestions } };
+  return { total, raw, A, B, C, D, E, penaltySquad, penaltyRoles, strength, warnings, insights: { strengths, weaknesses, suggestions }, aiAnalysis: ai };
 }
 
-const GRADE_COLOR = { S:'#fbbf24', A:'#10b981', B:'#3b82f6', C:'#8b5cf6', D:'#ef4444' };
-const GRADE_LABEL = { S:'S – Legendary', A:'A – Excellent', B:'B – Good', C:'C – Average', D:'D – Weak' };
-function gc(g) { return GRADE_COLOR[g] || '#94a3b8'; }
-function gl(g) { return GRADE_LABEL[g] || g; }
+// ─── STRENGTH HELPERS ─────────────────────────────────────────────────────────
+const STRENGTH_LABEL = {
+  strong:   { emoji: '🔥', text: 'Strong',   cls: 'strength-strong'   },
+  balanced: { emoji: '💪', text: 'Balanced', cls: 'strength-balanced' },
+  average:  { emoji: '👍', text: 'Average',  cls: 'strength-average'  },
+  weak:     { emoji: '⚠️', text: 'Weak',     cls: 'strength-weak'     },
+};
+function sl(s) { return STRENGTH_LABEL[s] || STRENGTH_LABEL.weak; }
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
 async function loadResults() {
-  // 1. Try sessionStorage (from live redirect)
   let results = null;
   try { results = JSON.parse(sessionStorage.getItem('auc_results')); } catch(e){}
-
-  // 2. Fallback: fetch from server using stored roomId
   if (!results || !Array.isArray(results) || results.length === 0) {
     const roomId = sessionStorage.getItem('auc_roomId');
     if (roomId) {
       try {
         const res = await fetch(`/api/room/${roomId}/results`);
-        if (res.ok) {
-          const data = await res.json();
-          results = data.results;
-        }
+        if (res.ok) { const data = await res.json(); results = data.results; }
       } catch(e) {}
     }
   }
-
   return results;
 }
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 async function computeResults() {
   const results = await loadResults();
-
   document.getElementById('loading-state').style.display = 'none';
-
   if (!results || !Array.isArray(results) || results.length === 0) {
     document.getElementById('results-content').style.display = 'block';
     document.getElementById('rankings-grid').innerHTML =
       '<div style="color:var(--text-muted);text-align:center;padding:60px">No results found. <a href="/" style="color:var(--accent)">Start a new auction</a></div>';
     return;
   }
-
   document.getElementById('results-content').style.display = 'block';
 
-  const totalBudget = results[0] ? (results[0].budgetSpent + results[0].budgetLeft) : 10000;
   const scored = results
-    .map(r => ({ ...r, score: scoreTeam(r.team, totalBudget, r.budgetSpent) }))
+    .map(r => ({ ...r, score: scoreTeam(r.team, r.budgetSpent) }))
     .sort((a,b) => b.score.total - a.score.total);
 
   renderSummary(results, scored);
@@ -388,19 +473,20 @@ function renderSummary(results, scored) {
   let mostExp = null;
   results.forEach(r => r.team.forEach(p => { if (!mostExp || p.soldPrice > mostExp.soldPrice) mostExp = p; }));
   const winner = scored[0];
+  const winnerSl = sl(winner?.score?.strength || 'weak');
 
   document.getElementById('results-sub').textContent =
-    `${totalPlayers} players sold · ${results.length} teams competing · Ranked by 4-parameter algorithm`;
+    `${totalPlayers} players sold · ${results.length} teams · Scored by 5-parameter squad strength algorithm`;
 
   document.getElementById('stats-grid').innerHTML = [
-    { icon:'👥', v: results.length,                                      l:'Teams' },
-    { icon:'🏏', v: totalPlayers,                                        l:'Players Sold' },
-    { icon:'💰', v: formatPrice(totalSpent),                              l:'Total Spent' },
-    { icon:'📊', v: formatPrice(Math.round(totalSpent/Math.max(totalPlayers,1))), l:'Avg Sale' },
-    { icon:'💎', v: mostExp ? formatPrice(mostExp.soldPrice) : '—',      l:'Top Bid' },
-    { icon:'🏆', v: winner ? winner.name : '—',                          l:'Champion Team' },
-    { icon:'⭐', v: winner ? `${winner.score.total}/100` : '—',          l:'Top Score' },
-    { icon:'🎯', v: winner ? winner.score.grade : '—',                   l:'Top Grade' },
+    { icon:'👥', v: results.length,                                             l:'Teams' },
+    { icon:'🏏', v: totalPlayers,                                               l:'Players Sold' },
+    { icon:'💰', v: formatPrice(totalSpent),                                    l:'Total Spent' },
+    { icon:'📊', v: formatPrice(Math.round(totalSpent/Math.max(totalPlayers,1))),l:'Avg Sale' },
+    { icon:'💎', v: mostExp ? formatPrice(mostExp.soldPrice) : '—',             l:'Top Bid' },
+    { icon:'🏆', v: winner ? winner.name : '—',                                 l:'Champion Team' },
+    { icon:'⭐', v: winner ? winner.score.total : '—',                          l:'Top Score' },
+    { icon:winnerSl.emoji, v: winnerSl.text,                                    l:'Champion Strength' },
   ].map(s => `
     <div class="stat-card">
       <div class="stat-card-icon">${s.icon}</div>
@@ -416,30 +502,32 @@ function renderMostExpensive(results) {
   }));
   if (!mostExp) return;
   document.getElementById('most-expensive').style.display = 'flex';
-  document.getElementById('exp-emoji').textContent = mostExp.emoji || '🏏';
-  document.getElementById('exp-name').textContent  = mostExp.name;
+  document.getElementById('exp-emoji').textContent  = mostExp.emoji || '🏏';
+  document.getElementById('exp-name').textContent   = mostExp.name;
   document.getElementById('exp-winner').textContent = `Signed by ${winner.name}`;
   document.getElementById('exp-price').textContent  = formatPrice(mostExp.soldPrice);
 }
 
 function renderPodium(scored) {
   const top3 = scored.slice(0, 3);
-  // Visual order: 2nd - 1st - 3rd
   const order = top3.length >= 3 ? [top3[1], top3[0], top3[2]] : top3;
   const medals = ['🥇','🥈','🥉'];
 
   document.getElementById('podium').innerHTML = order.map((r, vi) => {
     if (!r) return '';
     const rank = scored.indexOf(r) + 1;
-    const g = gc(r.score.grade);
+    const info = sl(r.score.strength);
+    const warnHtml = r.score.warnings.length
+      ? `<div class="warn-tags" style="justify-content:center;margin-top:8px">${r.score.warnings.map(w=>`<span class="warn-tag${w.danger?' danger':''}">${w.text}</span>`).join('')}</div>` : '';
     return `
     <div class="podium-slot" style="animation-delay:${vi*0.15}s">
       <div class="podium-card rank-${rank}">
         <div class="podium-rank-icon">${medals[rank-1] || rank}</div>
         <div class="avatar avatar-xl" style="margin:0 auto 10px">${r.avatar}</div>
         <div class="podium-name">${r.name}</div>
-        <div class="podium-score">${r.score.total}<span style="font-size:1rem;color:var(--text-muted)">/100</span></div>
-        <span class="podium-grade grade-${r.score.grade}">${r.score.grade} – ${gl(r.score.grade).split('–')[1].trim()}</span>
+        <div class="podium-score">${r.score.total}<span style="font-size:1rem;color:var(--text-muted)"> pts</span></div>
+        <span class="strength-badge ${info.cls}">${info.emoji} ${info.text}</span>
+        ${warnHtml}
         <div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted)">${r.team.length} players · ${formatPrice(r.budgetLeft)} left</div>
       </div>
       <div class="podium-base rank-${rank}">#${rank}</div>
@@ -450,9 +538,11 @@ function renderPodium(scored) {
 function renderRankings(scored) {
   document.getElementById('rankings-grid').innerHTML = scored.map((r, idx) => {
     const s = r.score;
-    const g = gc(s.grade);
+    const info = sl(s.strength);
     const roles = { BAT:0, BWL:0, WK:0, AR:0 };
     r.team.forEach(p => { if (roles[p.role] !== undefined) roles[p.role]++; });
+    const maxScore = Math.max(...scored.map(x => x.score.total), 1);
+    const warnTagsHtml = s.warnings.map(w => `<span class="warn-tag${w.danger?' danger':''}">${w.text}</span>`).join('');
 
     return `
     <div class="rank-card rank-${idx+1}" style="animation-delay:${idx*0.07}s">
@@ -462,57 +552,81 @@ function renderRankings(scored) {
         <div class="rank-user">
           <div class="rank-user-name">${r.name}</div>
           <div class="rank-user-sub">${r.team.length} players · ${formatPrice(r.budgetSpent)} spent · ${formatPrice(r.budgetLeft)} remaining</div>
-          <div class="rank-roles">
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">
+            <span class="strength-badge ${info.cls}" style="font-size:0.7rem;padding:2px 8px">${info.emoji} ${info.text}</span>
+            ${warnTagsHtml}
+          </div>
+          <div class="rank-roles" style="margin-top:6px">
             ${roles.BAT>0?`<span class="role-badge role-BAT" style="font-size:0.6rem;padding:2px 6px">🏏 ${roles.BAT}</span>`:''}
             ${roles.BWL>0?`<span class="role-badge role-BWL" style="font-size:0.6rem;padding:2px 6px">🎳 ${roles.BWL}</span>`:''}
             ${roles.WK>0?`<span class="role-badge role-WK" style="font-size:0.6rem;padding:2px 6px">🧤 ${roles.WK}</span>`:''}
             ${roles.AR>0?`<span class="role-badge role-AR" style="font-size:0.6rem;padding:2px 6px">⚡ ${roles.AR}</span>`:''}
           </div>
         </div>
-        <div style="text-align:center;margin-left:auto;flex-shrink:0">
-          <div style="font-family:'Rajdhani',sans-serif;font-size:2.1rem;font-weight:900;color:${g}">${s.total}</div>
-          <div style="font-size:0.68rem;color:var(--text-muted)">/100</div>
-          <span class="podium-grade grade-${s.grade}" style="margin-top:4px;display:inline-block">${s.grade}</span>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:900;color:var(--accent)">${s.total}</div>
+          <div style="font-size:0.68rem;color:var(--text-muted)">pts</div>
         </div>
-        <span style="color:var(--text-muted);font-size:1.1rem;margin-left:10px" id="chev-${idx}">▼</span>
+        <span style="color:var(--text-muted);font-size:1.1rem;margin-left:8px" id="chev-${idx}">▼</span>
       </div>
 
       <div class="expand-content" id="exp-${idx}">
         <div class="score-section">
-          <!-- Total bar -->
+
+          <!-- Overall bar -->
           <div class="score-total">
             <div>
-              <div style="font-size:0.73rem;color:var(--text-muted);text-transform:uppercase">Overall Score</div>
+              <div style="font-size:0.73rem;color:var(--text-muted);text-transform:uppercase">Team Strength Score</div>
               <div style="display:flex;align-items:baseline;gap:8px">
                 <span class="score-total-value">${s.total}</span>
-                <span style="color:var(--text-muted)">/100</span>
+                <span style="color:var(--text-muted)">pts</span>
               </div>
             </div>
             <div style="flex:1;margin-left:16px">
-              <div class="score-bar-bg" style="height:12px;border-radius:6px">
-                <div class="score-bar-fill" style="width:${s.total}%;background:linear-gradient(90deg,${g},${g}aa)"></div>
+              <div class="score-bar-bg" style="height:14px;border-radius:7px">
+                <div class="score-bar-fill" style="width:${Math.min((s.total/maxScore)*100,100)}%;background:linear-gradient(90deg,var(--accent),#fbbf24)"></div>
               </div>
             </div>
-            <span style="font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:${g};flex-shrink:0">${gl(s.grade)}</span>
           </div>
 
-          <!-- 4 dimension bars -->
+          <!-- 5-param bars -->
           <div class="score-bars">
             ${[
-              { label:'⭐ Player Quality',   val:s.quality,      max:35, color:'#fbbf24' },
-              { label:'⚖️ Team Balance',    val:s.balance,      max:30, color:'#10b981' },
-              { label:'🎯 Coordination',    val:s.coordination, max:20, color:'#3b82f6' },
-              { label:'💰 Value Efficiency', val:s.value,       max:15, color:'#8b5cf6' },
-            ].map(sc => `
-              <div class="score-bar-row">
+              { label:'⭐ (A) Player Ratings',    val:s.A,            max:Math.max(...scored.map(x=>x.score.A),1),  color:'#fbbf24', tip:`Sum of all ${r.team.length} player ratings` },
+              { label:'⚖️ (B) Role Balance',     val:s.B,            max:20,   color:'#10b981', tip:'All 4 roles balanced → +20 pts' },
+              { label:'🌟 (C) Star Bonus',        val:s.C,            max:Math.max(...scored.map(x=>x.score.C),1),  color:'#ef4444', tip:'Rating ≥9 players × 5 pts each' },
+              { label:'💰 (D) Budget Efficiency', val:s.D,            max:50,   color:'#3b82f6', tip:'Rating per lakh spent, normalised to 50' },
+              { label:'🧢 (E) Experience',        val:s.E,            max:30,   color:'#8b5cf6', tip:'Experienced-nation players × 2 pts' },
+              { label:'❌ Squad Penalty',         val:-s.penaltySquad,max:0,    color:'#dc2626', tip:`−${s.penaltySquad} pts (squad under ${MIN_SQUAD})`, penalty:true },
+              { label:'❌ Role Penalty',          val:-s.penaltyRoles,max:0,    color:'#dc2626', tip:`−${s.penaltyRoles} pts (missing key roles)`, penalty:true },
+            ].filter(sc => sc.penalty ? sc.val < 0 : true).map(sc => `
+              <div class="score-bar-row" title="${sc.tip}">
                 <div class="score-bar-header">
                   <span class="score-bar-label">${sc.label}</span>
-                  <span class="score-bar-value" style="color:${sc.color}">${sc.val}/${sc.max}</span>
+                  <span class="score-bar-value" style="color:${sc.color}">${sc.penalty ? sc.val : '+'+sc.val}</span>
                 </div>
                 <div class="score-bar-bg">
-                  <div class="score-bar-fill" style="width:${(sc.val/sc.max)*100}%;background:${sc.color}"></div>
+                  <div class="score-bar-fill ${sc.penalty?'penalty-bar-fill':''}" style="width:${sc.penalty ? Math.min((Math.abs(sc.val)/100)*100,100) : (sc.max>0?(sc.val/sc.max)*100:0)}%;background:${sc.penalty?undefined:sc.color}"></div>
                 </div>
               </div>`).join('')}
+          </div>
+
+          <!-- AI Analysis -->
+          <div class="ai-analysis">
+            <div class="ai-analysis-label">🤖 AI Analysis</div>
+            ${s.aiAnalysis}
+          </div>
+
+          <!-- Charts -->
+          <div class="charts-row">
+            <div class="chart-box">
+              <div class="chart-title">🥧 Role Distribution</div>
+              ${renderDonut(roles, r.team.length)}
+            </div>
+            <div class="chart-box" style="overflow:auto;max-height:240px">
+              <div class="chart-title">📊 Player Ratings</div>
+              ${renderRatingBars(r.team)}
+            </div>
           </div>
 
           <!-- Insights -->
@@ -521,19 +635,19 @@ function renderRankings(scored) {
               <div class="insight-title">💪 Strengths</div>
               ${s.insights.strengths.length
                 ? s.insights.strengths.map(t=>`<div class="insight-item"><span>✅</span><span>${t}</span></div>`).join('')
-                : '<div class="insight-item" style="color:var(--text-muted)">No notable strengths yet</div>'}
+                : '<div class="insight-item" style="color:var(--text-muted)">No notable strengths</div>'}
             </div>
             <div class="insight-box">
               <div class="insight-title">⚠️ Weaknesses &amp; Tips</div>
               ${s.insights.weaknesses.map(t=>`<div class="insight-item"><span>❌</span><span>${t}</span></div>`).join('')}
               ${s.insights.suggestions.map(t=>`<div class="insight-item"><span>💡</span><span>${t}</span></div>`).join('')}
               ${!s.insights.weaknesses.length && !s.insights.suggestions.length
-                ? '<div class="insight-item" style="color:var(--accent-green)">Team looks solid — well constructed!</div>' : ''}
+                ? '<div class="insight-item" style="color:var(--accent-green)">Team looks terrific — no glaring gaps!</div>' : ''}
             </div>
           </div>
         </div>
 
-        <!-- Squad roster -->
+        <!-- Roster -->
         <div class="team-roster">
           <div style="font-size:0.73rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);font-weight:600;margin-bottom:10px">
             📋 Full Squad (${r.team.length} players)
@@ -542,7 +656,7 @@ function renderRankings(scored) {
             ${r.team.length === 0
               ? '<div style="color:var(--text-muted);font-size:0.85rem;grid-column:1/-1;text-align:center;padding:20px">No players purchased</div>'
               : r.team.map(p => `
-                <div class="roster-player" title="${p.name} – ${roleName(p.role)} – ${formatPrice(p.soldPrice)}">
+                <div class="roster-player">
                   ${p.imageUrl
                     ? `<img class="roster-player-photo" src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="roster-player-emoji" style="display:none">${p.emoji}</div>`
                     : `<div class="roster-player-emoji">${p.emoji}</div>`}
@@ -552,6 +666,7 @@ function renderRankings(scored) {
                       <span class="role-badge role-${p.role}" style="font-size:0.52rem;padding:1px 5px">${p.role}</span>
                       <span class="roster-player-price">${formatPrice(p.soldPrice)}</span>
                     </div>
+                    <div class="roster-rating-stars">${'★'.repeat(Math.round(p.rating||5))}${'☆'.repeat(10-Math.round(p.rating||5))}</div>
                   </div>
                 </div>`).join('')}
           </div>
@@ -568,11 +683,69 @@ function renderRankings(scored) {
   setTimeout(() => toggleExpand(0), 400);
 }
 
+// ─── SVG DONUT CHART ─────────────────────────────────────────────────────────
+function renderDonut(roles, total) {
+  if (total === 0) return '<div style="color:var(--text-muted);font-size:0.8rem">No players</div>';
+  const items = [
+    { key:'BAT', label:'Bat',  color:'#3b82f6' },
+    { key:'BWL', label:'Bowl', color:'#ef4444' },
+    { key:'WK',  label:'WK',   color:'#f59e0b' },
+    { key:'AR',  label:'AR',   color:'#10b981' },
+  ].filter(i => roles[i.key] > 0);
+
+  const R = 44, cx = 50, cy = 50, stroke = 18;
+  const circ = 2 * Math.PI * R;
+  let offset = 0;
+  let arcs = '';
+  items.forEach(item => {
+    const pct  = roles[item.key] / total;
+    const dash = pct * circ;
+    arcs += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none"
+               stroke="${item.color}" stroke-width="${stroke}"
+               stroke-dasharray="${dash} ${circ - dash}"
+               stroke-dashoffset="${-offset}"
+               transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += dash;
+  });
+
+  const legendHtml = items.map(i => `
+    <div class="donut-legend-item">
+      <div class="donut-legend-dot" style="background:${i.color}"></div>
+      <span style="color:var(--text-secondary)">${i.label}</span>
+      <span style="font-family:'Rajdhani',sans-serif;font-weight:700;margin-left:auto">${roles[i.key]}</span>
+    </div>`).join('');
+
+  return `<div class="donut-wrap">
+    <svg viewBox="0 0 100 100" width="100" height="100" style="flex-shrink:0">${arcs}</svg>
+    <div class="donut-legend" style="flex:1">${legendHtml}</div>
+  </div>`;
+}
+
+// ─── RATING BAR CHART ─────────────────────────────────────────────────────────
+function renderRatingBars(team) {
+  if (!team || team.length === 0) return '<div style="color:var(--text-muted);font-size:0.8rem">No players</div>';
+  const sorted = [...team].sort((a,b) => (b.rating||5) - (a.rating||5));
+  return sorted.map(p => {
+    const r = p.rating || 5;
+    const w = (r / 10) * 100;
+    const color = ROLE_COLORS[p.role] || '#6366f1';
+    const stars = '★'.repeat(Math.round(r)) + '☆'.repeat(10 - Math.round(r));
+    return `<div class="rating-bar-item" title="${p.name} – Rating ${r}/10">
+      <div class="rating-bar-name" title="${p.name}">${p.name.split(' ').pop()}</div>
+      <div class="rating-bar-track">
+        <div class="rating-bar-fill" style="width:${w}%;background:${color}"></div>
+      </div>
+      <div class="rating-bar-num" style="color:${color}">${r}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── EXPAND TOGGLE ────────────────────────────────────────────────────────────
 function toggleExpand(idx) {
-  const content  = document.getElementById(`exp-${idx}`);
-  const label    = document.getElementById(`exp-lbl-${idx}`);
-  const chevron  = document.getElementById(`chev-${idx}`);
-  const isOpen   = content.classList.contains('open');
+  const content = document.getElementById(`exp-${idx}`);
+  const label   = document.getElementById(`exp-lbl-${idx}`);
+  const chevron = document.getElementById(`chev-${idx}`);
+  const isOpen  = content.classList.contains('open');
   content.classList.toggle('open', !isOpen);
   label.innerHTML   = isOpen ? '▼ Show full analysis &amp; squad' : '▲ Hide analysis';
   if (chevron) chevron.textContent = isOpen ? '▼' : '▲';
@@ -588,15 +761,15 @@ function toggleExpand(idx) {
   }
 }
 
+// ─── SHARE ────────────────────────────────────────────────────────────────────
 function shareResults() {
-  const grid = document.getElementById('rankings-grid');
-  const cards = grid ? grid.querySelectorAll('.rank-card') : [];
+  const cards = document.querySelectorAll('.rank-card');
   let text = '🏏 IPL Auction Team Rankings!\n\n';
   cards.forEach((_, i) => {
-    const name = document.querySelectorAll('.rank-user-name')[i]?.textContent || '';
-    const score = document.querySelectorAll('.rank-card .rank-header [style*="font-size:2"]')[i]?.textContent || '?';
-    const grade = document.querySelectorAll('.rank-card .podium-grade')[i]?.textContent || '';
-    text += `${i+1}. ${name} – ${grade} (${score}/100)\n`;
+    const name  = document.querySelectorAll('.rank-user-name')[i]?.textContent || '';
+    const score = document.querySelectorAll('.rank-card .score-total-value')[i]?.textContent || '?';
+    const str   = document.querySelectorAll('.rank-card .strength-badge')[i]?.textContent?.trim() || '';
+    text += `${i+1}. ${name} – ${score} pts (${str})\n`;
   });
   if (navigator.share) navigator.share({ title: 'IPL Auction Rankings', text });
   else { navigator.clipboard.writeText(text); showToast('Rankings copied to clipboard!', 'success'); }

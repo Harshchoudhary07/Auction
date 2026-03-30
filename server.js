@@ -314,6 +314,11 @@ io.on('connection', (socket) => {
     const user = room.users[socket.id];
     if (!user) return cb?.({ error: 'User not found' });
 
+    // Prevent consecutive bids from the same user
+    if (auc.highestBidder === socket.id) {
+      return cb?.({ error: 'You are already the highest bidder! Wait for someone else to bid.' });
+    }
+
     // Validate bid
     const minBid = auc.currentBid + room.settings.minIncrement;
     if (typeof amount !== 'number' || amount < minBid) {
@@ -355,7 +360,29 @@ io.on('connection', (socket) => {
     cb?.({ success: true });
   });
 
-  // ── Host: skip current player ─────────────────────────────────────
+  // ── Host: force-end the entire auction ────────────────────────────────────
+  socket.on('host_end_auction', (cb) => {
+    const room = getRoomSafe(socket.data.roomId);
+    if (!room || room.hostSocketId !== socket.id) return cb?.({ error: 'Forbidden' });
+    if (!room.auction || room.status !== 'AUCTION') return cb?.({ error: 'No active auction' });
+    clearTimer(room);
+    // Broadcast that the current player is unsold (so clients can clean up)
+    if (room.auction.currentPlayer) {
+      io.to(room.roomId).emit('player_unsold', {
+        player: room.auction.currentPlayer,
+        skipped: true,
+        reason: 'auction_ended',
+      });
+    }
+    // Small delay so clients receive the unsold event, then finalize
+    setTimeout(() => {
+      if (!rooms[room.roomId]) return;
+      endAuction(room);
+    }, 800);
+    cb?.({ success: true });
+  });
+
+  // ── Host: skip current player ─────────────────────────────────────────────
   socket.on('skip_player', (cb) => {
     const room = getRoomSafe(socket.data.roomId);
     if (!room || room.hostSocketId !== socket.id) return cb?.({ error: 'Forbidden' });
